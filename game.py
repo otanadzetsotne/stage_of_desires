@@ -14,7 +14,7 @@ class Game:
         # Set up some constants
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 1200, 800
         self.map_width, self.map_height = 250, 250
-        self.TILE_SIZE = 32
+        self.TILE_SIZE = 48
 
         # Create a screen
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -26,7 +26,15 @@ class Game:
         self.cam_x, self.cam_y = 0, 0
 
         # Store the terrain
-        self.terrain = Terrain(self.map_width, self.map_height, self.TILE_SIZE, self.TILE_SIZE, diagonal_cells=True, long_biomes=True)
+        self.terrain = Terrain(
+            self.map_width,
+            self.map_height,
+            self.TILE_SIZE,
+            self.TILE_SIZE,
+            diagonal_cells=True,
+            long_biomes=True,
+            asymmetric_biomes_quantity=15,
+        )
 
     def run(self):
         map_width_px = len(self.terrain.terrain[0]) * self.TILE_SIZE
@@ -34,8 +42,9 @@ class Game:
 
         running = True
         zoom_scale = 1
-        # keys = {K_w: False, K_s: False, K_a: False, K_d: False}
         keys = {K_w: False, K_s: False, K_a: False, K_d: False}
+        scroll_margin = 100
+        scroll_speed = 25
         while running:
             old_zoom_scale = zoom_scale
             # Handle events
@@ -53,14 +62,25 @@ class Game:
                     if event.key in keys:
                         keys[event.key] = False
 
+            # Get mouse position and adjust camera if near the edges
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if mouse_x < scroll_margin:
+                self.cam_x -= scroll_speed
+            elif self.SCREEN_WIDTH - mouse_x < scroll_margin:
+                self.cam_x += scroll_speed
+            if mouse_y < scroll_margin:
+                self.cam_y -= scroll_speed
+            elif self.SCREEN_HEIGHT - mouse_y < scroll_margin:
+                self.cam_y += scroll_speed
+
             if keys[K_w]:
-                self.cam_y -= self.TILE_SIZE
+                self.cam_y -= scroll_speed
             if keys[K_s]:
-                self.cam_y += self.TILE_SIZE
+                self.cam_y += scroll_speed
             if keys[K_a]:
-                self.cam_x -= self.TILE_SIZE
+                self.cam_x -= scroll_speed
             if keys[K_d]:
-                self.cam_x += self.TILE_SIZE
+                self.cam_x += scroll_speed
 
             # Limit zoom scale to reasonable limits
             zoom_scale = max(.5, min(zoom_scale, 1))
@@ -84,7 +104,6 @@ class Game:
 
                     # Only draw the tile if it is within the screen boundaries
                     if -tile_size <= x <= self.SCREEN_WIDTH and -tile_size <= y <= self.SCREEN_HEIGHT:
-                    # if -self.TILE_SIZE <= x <= self.SCREEN_WIDTH and -self.TILE_SIZE <= y <= self.SCREEN_HEIGHT:
                         tile = self.terrain.terrain[i][j]
                         tile = pygame.image.frombytes(tile.pixels.tobytes(), (tile.width, tile.height), 'RGB')
                         tile = pygame.transform.scale(tile, (tile_size, tile_size))
