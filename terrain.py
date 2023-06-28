@@ -5,7 +5,7 @@ from random import choice, randint
 import numpy as np
 from PIL import Image
 
-from render.cell import TEXTURES, Cell
+from cell import TEXTURES, Cell
 
 
 CELL_WIDTH = 50

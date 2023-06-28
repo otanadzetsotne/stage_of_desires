@@ -1,9 +1,7 @@
-from decimal import Decimal
-
 import pygame
 from pygame.locals import *
 
-from render.terrain import Terrain
+from terrain import Terrain
 
 
 class Game:
@@ -23,7 +21,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # Set up some variables for the camera position
-        self.cam_x, self.cam_y = 0, 0
+        self.cam_x, self.cam_y = 0., 0.
 
         # Store the terrain
         self.terrain = Terrain(
@@ -36,13 +34,14 @@ class Game:
             asymmetric_biomes_quantity=15,
         )
 
+        self.keys = {K_w: False, K_s: False, K_a: False, K_d: False}
+
     def run(self):
         map_width_px = len(self.terrain.terrain[0]) * self.TILE_SIZE
         map_height_px = len(self.terrain.terrain) * self.TILE_SIZE
 
         running = True
         zoom_scale = 1
-        keys = {K_w: False, K_s: False, K_a: False, K_d: False}
         scroll_margin = 100
         scroll_speed = 25
         while running:
@@ -52,15 +51,15 @@ class Game:
                 if event.type == QUIT:
                     running = False
                 elif event.type == KEYDOWN:
-                    if event.key in keys:
-                        keys[event.key] = True
+                    if event.key in self.keys:
+                        self.keys[event.key] = True
                     if event.key == K_r:
                         zoom_scale += .1
                     if event.key == K_f:
                         zoom_scale -= .1
                 elif event.type == KEYUP:
-                    if event.key in keys:
-                        keys[event.key] = False
+                    if event.key in self.keys:
+                        self.keys[event.key] = False
 
             # Get mouse position and adjust camera if near the edges
             mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -73,13 +72,13 @@ class Game:
             elif self.SCREEN_HEIGHT - mouse_y < scroll_margin:
                 self.cam_y += scroll_speed
 
-            if keys[K_w]:
+            if self.keys[K_w]:
                 self.cam_y -= scroll_speed
-            if keys[K_s]:
+            if self.keys[K_s]:
                 self.cam_y += scroll_speed
-            if keys[K_a]:
+            if self.keys[K_a]:
                 self.cam_x -= scroll_speed
-            if keys[K_d]:
+            if self.keys[K_d]:
                 self.cam_x += scroll_speed
 
             # Limit zoom scale to reasonable limits

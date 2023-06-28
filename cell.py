@@ -47,6 +47,10 @@ class Cell:
 
         return self._pixels
 
+    @property
+    def color(self):
+        return self.pixels.mean(axis=(0, 1)).astype(int)
+
     def to_img(self, img_out):
         img = Image.fromarray(self.pixels)
         img.save(img_out)
